@@ -53,6 +53,18 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Limita o pixel 
 arView.appendChild(renderer.domElement);
 console.log('Renderizador configurado');
 
+// Cria o plano que marca a área do marcador
+const anchor = mindarThree.addAnchor(0);
+const geometry = new THREE.PlaneGeometry(1, 0.55);
+const material = new THREE.MeshBasicMaterial({ 
+  color: 0x00ffff, 
+  transparent: true, 
+  opacity: 0.5,
+  side: THREE.DoubleSide
+});
+const plane = new THREE.Mesh(geometry, material);
+anchor.group.add(plane);
+
 // Carrega a textura da Terra
 console.log('Iniciando carregamento da textura');
 const textureLoader = new THREE.TextureLoader();

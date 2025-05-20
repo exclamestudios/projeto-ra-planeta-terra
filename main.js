@@ -26,9 +26,8 @@ async function checkFileExists(url) {
 const mindarThree = new MindARThree({
   container: arView,
   imageTargetSrc: './mind/terra.mind',
-  uiLoading: 'none',
-  uiScanning: 'none',
-  uiError: 'none',
+  maxTrack: 1
+  // sem uiLoading/uiScanning/uiError → aparecerá o retículo + linha automaticamente
 });
 
 // Obtém a cena e a câmera

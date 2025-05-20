@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { MindARThree } from 'mindar-image-three';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 // Elementos da UI
 const startButton = document.getElementById('startButton');

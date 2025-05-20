@@ -31,10 +31,10 @@ const mindarThree = new MindARThree({
   container: arView,
   imageTargetSrc: './mind/terra.mind',
   maxTrack: 1,
-  warmupTolerance: 5,        // Aumenta a tolerância no aquecimento
-  missTolerance: 5,          // Aumenta a tolerância para perda do marcador
-  minDetectionConfidence: 0.5, // Reduz a confiança mínima necessária
-  minTrackingConfidence: 0.5   // Reduz a confiança mínima de tracking
+  warmupTolerance: 10,        // Aumenta a tolerância no aquecimento
+  missTolerance: 10,          // Aumenta a tolerância para perda do marcador
+  minDetectionConfidence: 0.7, // Aumenta a confiança mínima necessária
+  minTrackingConfidence: 0.7   // Aumenta a confiança mínima de tracking
 });
 console.log('MindAR inicializado');
 

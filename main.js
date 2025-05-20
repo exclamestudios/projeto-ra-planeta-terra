@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { MindARThree } from 'mindar-image-three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 // Elementos da UI
 const startButton = document.getElementById('startButton');
@@ -71,32 +72,36 @@ const material = new THREE.MeshBasicMaterial({
 const plane = new THREE.Mesh(geometry, material);
 anchor.group.add(plane);
 
-// Carrega a textura da Terra
-console.log('Iniciando carregamento da textura');
-const textureLoader = new THREE.TextureLoader();
-textureLoader.crossOrigin = 'anonymous';
+// Carrega o modelo 3D
+console.log('Iniciando carregamento do modelo 3D');
+const gltfLoader = new GLTFLoader();
+let model = null;
 
-textureLoader.load(
-  './img/terra.jpg',
-  (texture) => {
-    console.log('Textura carregada com sucesso');
-    // Cria a geometria da Terra
-    const geometry = new THREE.SphereGeometry(0.5, 32, 32);
-    const material = new THREE.MeshBasicMaterial({ 
-      map: texture,
-      transparent: true,
-      opacity: 0.9
-    });
-    const earth = new THREE.Mesh(geometry, material);
+gltfLoader.load(
+  './3d/terra/scene.gltf',
+  (gltf) => {
+    console.log('Modelo 3D carregado com sucesso');
+    model = gltf.scene;
     
-    // Adiciona a Terra à cena
-    scene.add(earth);
-    console.log('Terra adicionada à cena');
+    // Ajusta o tamanho do modelo
+    const box = new THREE.Box3().setFromObject(model);
+    const size = box.getSize(new THREE.Vector3());
+    const maxDim = Math.max(size.x, size.y, size.z);
+    const scale = 0.5 / maxDim; // Ajusta para ter 0.5 unidades de tamanho
+    model.scale.set(scale, scale, scale);
+    
+    // Centraliza o modelo
+    const center = box.getCenter(new THREE.Vector3());
+    model.position.sub(center.multiplyScalar(scale));
+    
+    // Adiciona o modelo ao anchor
+    anchor.group.add(model);
+    model.visible = false; // Começa invisível
   },
   undefined,
   (error) => {
-    loading.textContent = '❌ Erro ao carregar imagem';
-    console.error('Erro ao carregar textura:', error);
+    loading.textContent = '❌ Erro ao carregar modelo 3D';
+    console.error('Erro ao carregar modelo 3D:', error);
   }
 );
 
@@ -124,12 +129,18 @@ async function startAR() {
       console.log('Marcador encontrado');
       loading.style.display = 'none';
       descricao.style.opacity = '1';
+      if (model) {
+        model.visible = true;
+      }
     };
 
     anchor.onTargetLost = () => {
       console.log('Marcador perdido');
       loading.style.display = 'block';
       descricao.style.opacity = '0';
+      if (model) {
+        model.visible = false;
+      }
     };
 
     // Adiciona eventos de tracking
@@ -138,7 +149,7 @@ async function startAR() {
       console.log(`Confiança de detecção: ${(confidence * 100).toFixed(1)}%`);
       
       // Atualiza a mensagem de loading com a confiança
-      if (confidence < 0.5) {
+      if (confidence < 0.4) {
         loading.textContent = `🔍 Procurando marcador... (${(confidence * 100).toFixed(1)}%)`;
       } else {
         loading.textContent = `✅ Marcador detectado! (${(confidence * 100).toFixed(1)}%)`;

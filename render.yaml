@@ -4,7 +4,22 @@ services:
     env: static
     buildCommand: echo "No build required"
     staticPublishPath: .
+    autoDeploy: true
+    branch: versao-inicial
     routes:
       - type: rewrite
         source: /*
-        destination: /index.html 
+        destination: /index.html
+    headers:
+      - path: /*
+        name: Cache-Control
+        value: no-cache
+      - path: /mind/*
+        name: Cache-Control
+        value: public, max-age=31536000
+      - path: /img/*
+        name: Cache-Control
+        value: public, max-age=31536000
+      - path: /lib/*
+        name: Cache-Control
+        value: public, max-age=31536000 

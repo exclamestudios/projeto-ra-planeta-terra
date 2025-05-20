@@ -93,12 +93,53 @@ gltfLoader.load(
     // Centraliza o modelo
     const center = box.getCenter(new THREE.Vector3());
     model.position.sub(center.multiplyScalar(scale));
+
+    // Ajusta as texturas
+    model.traverse((child) => {
+      if (child.isMesh) {
+        // Habilita sombras
+        child.castShadow = true;
+        child.receiveShadow = true;
+
+        // Ajusta as texturas
+        if (child.material) {
+          // Garante que as texturas sejam carregadas corretamente
+          if (child.material.map) {
+            child.material.map.encoding = THREE.sRGBEncoding;
+            child.material.map.needsUpdate = true;
+          }
+          if (child.material.emissiveMap) {
+            child.material.emissiveMap.encoding = THREE.sRGBEncoding;
+            child.material.emissiveMap.needsUpdate = true;
+          }
+          if (child.material.normalMap) {
+            child.material.normalMap.needsUpdate = true;
+          }
+          if (child.material.roughnessMap) {
+            child.material.roughnessMap.needsUpdate = true;
+          }
+          if (child.material.metalnessMap) {
+            child.material.metalnessMap.needsUpdate = true;
+          }
+          
+          // Ajusta as propriedades do material
+          child.material.needsUpdate = true;
+          child.material.side = THREE.DoubleSide;
+        }
+      }
+    });
     
     // Adiciona o modelo ao anchor
     anchor.group.add(model);
     model.visible = false; // Começa invisível
   },
-  undefined,
+  // Progresso do carregamento
+  (xhr) => {
+    const percent = (xhr.loaded / xhr.total) * 100;
+    console.log(`Carregando modelo: ${percent.toFixed(2)}%`);
+    loading.textContent = `Carregando modelo: ${percent.toFixed(0)}%`;
+  },
+  // Erro no carregamento
   (error) => {
     loading.textContent = '❌ Erro ao carregar modelo 3D';
     console.error('Erro ao carregar modelo 3D:', error);

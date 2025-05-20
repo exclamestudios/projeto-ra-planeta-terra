@@ -31,10 +31,16 @@ const mindarThree = new MindARThree({
   container: arView,
   imageTargetSrc: './mind/terra.mind',
   maxTrack: 1,
-  warmupTolerance: 10,        // Aumenta a tolerância no aquecimento
-  missTolerance: 10,          // Aumenta a tolerância para perda do marcador
-  minDetectionConfidence: 0.7, // Aumenta a confiança mínima necessária
-  minTrackingConfidence: 0.7   // Aumenta a confiança mínima de tracking
+  maxTargets: 1,
+  warmupTolerance: 15,        // Aumenta a tolerância no aquecimento
+  missTolerance: 15,          // Aumenta a tolerância para perda do marcador
+  minDetectionConfidence: 0.6, // Reduz a confiança mínima para permitir detecção à distância
+  minTrackingConfidence: 0.6,  // Reduz a confiança mínima de tracking
+  debug: true,                // Ativa o modo debug para ver informações de tracking
+  uiDebug: true,              // Mostra informações de debug na tela
+  uiLoading: "no",            // Desativa o overlay de loading padrão
+  uiScanning: "no",           // Desativa o overlay de scanning padrão
+  uiError: "no"               // Desativa o overlay de erro padrão
 });
 console.log('MindAR inicializado');
 

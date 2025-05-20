@@ -70,6 +70,8 @@ textureLoader.load(
 
 // Função para iniciar a AR
 async function startAR() {
+  console.log('Iniciando AR');
+
   try {
     // Verifica se o arquivo .mind existe
     const mindFileExists = await checkFileExists('./mind/terra.mind');

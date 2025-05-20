@@ -48,6 +48,14 @@ console.log('MindAR inicializado');
 // Obtém a cena e a câmera
 const { scene, camera } = mindarThree;
 
+// Adiciona iluminação à cena
+const ambientLight = new THREE.AmbientLight(0xffffff, 1);
+scene.add(ambientLight);
+
+const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+directionalLight.position.set(1, 1, 1);
+scene.add(directionalLight);
+
 // Configura o renderizador
 console.log('Configurando renderizador');
 const renderer = new THREE.WebGLRenderer({ 
@@ -57,6 +65,8 @@ const renderer = new THREE.WebGLRenderer({
 });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Limita o pixel ratio
+renderer.outputEncoding = THREE.sRGBEncoding; // Configura o encoding do renderer
+renderer.shadowMap.enabled = true; // Habilita sombras
 arView.appendChild(renderer.domElement);
 console.log('Renderizador configurado');
 
@@ -94,7 +104,7 @@ gltfLoader.load(
     const center = box.getCenter(new THREE.Vector3());
     model.position.sub(center.multiplyScalar(scale));
 
-    // Ajusta as texturas
+    // Ajusta as texturas e materiais
     model.traverse((child) => {
       if (child.isMesh) {
         // Habilita sombras
@@ -103,6 +113,20 @@ gltfLoader.load(
 
         // Ajusta as texturas
         if (child.material) {
+          // Configura o material
+          child.material = new THREE.MeshStandardMaterial({
+            map: child.material.map,
+            normalMap: child.material.normalMap,
+            roughnessMap: child.material.roughnessMap,
+            metalnessMap: child.material.metalnessMap,
+            emissiveMap: child.material.emissiveMap,
+            emissive: new THREE.Color(0xffffff),
+            emissiveIntensity: 0.5,
+            roughness: 0.5,
+            metalness: 0.5,
+            side: THREE.DoubleSide
+          });
+
           // Garante que as texturas sejam carregadas corretamente
           if (child.material.map) {
             child.material.map.encoding = THREE.sRGBEncoding;
@@ -124,7 +148,6 @@ gltfLoader.load(
           
           // Ajusta as propriedades do material
           child.material.needsUpdate = true;
-          child.material.side = THREE.DoubleSide;
         }
       }
     });

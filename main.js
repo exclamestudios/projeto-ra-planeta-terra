@@ -113,26 +113,21 @@ async function startAR() {
     loading.style.display = 'block';
     descricao.style.opacity = '0';
 
-    // Inicia o MindAR
-    console.log('Iniciando MindAR');
-    await mindarThree.start();
-    console.log('MindAR iniciado com sucesso');
-
-    // Adiciona eventos de detecção do marcador
-    mindarThree.onTargetFound = () => {
+    // Configura os eventos antes de iniciar
+    anchor.onTargetFound = () => {
       console.log('Marcador encontrado');
       loading.style.display = 'none';
       descricao.style.opacity = '1';
     };
 
-    mindarThree.onTargetLost = () => {
+    anchor.onTargetLost = () => {
       console.log('Marcador perdido');
       loading.style.display = 'block';
       descricao.style.opacity = '0';
     };
 
     // Adiciona eventos de tracking
-    mindarThree.onTargetUpdate = (target) => {
+    anchor.onTargetUpdate = (target) => {
       const confidence = target.detectionConfidence;
       console.log(`Confiança de detecção: ${(confidence * 100).toFixed(1)}%`);
       
@@ -143,6 +138,11 @@ async function startAR() {
         loading.textContent = `✅ Marcador detectado! (${(confidence * 100).toFixed(1)}%)`;
       }
     };
+
+    // Inicia o MindAR
+    console.log('Iniciando MindAR');
+    await mindarThree.start();
+    console.log('MindAR iniciado com sucesso');
 
     // Inicia o loop de renderização
     console.log('Iniciando loop de renderização');

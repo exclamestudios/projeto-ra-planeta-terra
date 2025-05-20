@@ -7,6 +7,21 @@ const arView = document.getElementById('arView');
 const descricao = document.getElementById('descricao');
 const loading = document.getElementById('loading');
 
+// Função para verificar se o arquivo existe
+async function checkFileExists(url) {
+  try {
+    const response = await fetch(url, { method: 'HEAD' });
+    if (!response.ok) {
+      throw new Error(`Arquivo não encontrado: ${url} (${response.status})`);
+    }
+    console.log(`Arquivo encontrado: ${url}`);
+    return true;
+  } catch (error) {
+    console.error(`Erro ao verificar arquivo ${url}:`, error);
+    return false;
+  }
+}
+
 // Inicializa o MindAR
 const mindarThree = new MindARThree({
   container: arView,
@@ -50,12 +65,19 @@ textureLoader.load(
   undefined,
   (error) => {
     loading.textContent = '❌ Erro ao carregar imagem';
+    console.error('Erro ao carregar textura:', error);
   }
 );
 
 // Função para iniciar a AR
 async function startAR() {
   try {
+    // Verifica se o arquivo .mind existe
+    const mindFileExists = await checkFileExists('./mind/terra.mind');
+    if (!mindFileExists) {
+      throw new Error('Arquivo .mind não encontrado');
+    }
+
     // Esconde o botão e mostra a view AR
     startButton.style.display = 'none';
     arView.style.display = 'block';
@@ -64,16 +86,19 @@ async function startAR() {
 
     // Inicia o MindAR
     await mindarThree.start();
+    console.log('MindAR iniciado com sucesso');
 
     // Adiciona eventos de detecção do marcador
     mindarThree.onTargetFound = () => {
       loading.style.display = 'none';
       descricao.style.opacity = '1';
+      console.log('Marcador encontrado');
     };
 
     mindarThree.onTargetLost = () => {
       loading.style.display = 'block';
       descricao.style.opacity = '0';
+      console.log('Marcador perdido');
     };
 
     // Inicia o loop de renderização
@@ -82,6 +107,7 @@ async function startAR() {
     });
 
   } catch (error) {
+    console.error('Erro ao iniciar AR:', error);
     loading.textContent = `❌ Erro: ${error.message || 'Desconhecido'}`;
     startButton.style.display = 'block';
   }

@@ -30,8 +30,11 @@ console.log('Inicializando MindAR');
 const mindarThree = new MindARThree({
   container: arView,
   imageTargetSrc: './mind/terra.mind',
-  maxTrack: 1
-  // sem uiLoading/uiScanning/uiError → aparecerá o retículo + linha automaticamente
+  maxTrack: 1,
+  warmupTolerance: 5,        // Aumenta a tolerância no aquecimento
+  missTolerance: 5,          // Aumenta a tolerância para perda do marcador
+  minDetectionConfidence: 0.5, // Reduz a confiança mínima necessária
+  minTrackingConfidence: 0.5   // Reduz a confiança mínima de tracking
 });
 console.log('MindAR inicializado');
 
@@ -42,10 +45,11 @@ const { scene, camera } = mindarThree;
 console.log('Configurando renderizador');
 const renderer = new THREE.WebGLRenderer({ 
   antialias: true,
-  alpha: true 
+  alpha: true,
+  powerPreference: 'high-performance' // Prioriza performance
 });
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(window.devicePixelRatio);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Limita o pixel ratio
 arView.appendChild(renderer.domElement);
 console.log('Renderizador configurado');
 

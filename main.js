@@ -114,39 +114,40 @@ gltfLoader.load(
         // Ajusta as texturas
         if (child.material) {
           // Configura o material
-          child.material = new THREE.MeshStandardMaterial({
+          const material = new THREE.MeshStandardMaterial({
             map: child.material.map,
             normalMap: child.material.normalMap,
             roughnessMap: child.material.roughnessMap,
             metalnessMap: child.material.metalnessMap,
             emissiveMap: child.material.emissiveMap,
             emissive: new THREE.Color(0xffffff),
-            emissiveIntensity: 0.5,
-            roughness: 0.5,
-            metalness: 0.5,
+            emissiveIntensity: 0.2,
+            roughness: 0.7,
+            metalness: 0.3,
             side: THREE.DoubleSide
           });
 
-          // Garante que as texturas sejam carregadas corretamente
-          if (child.material.map) {
-            child.material.map.encoding = THREE.sRGBEncoding;
-            child.material.map.needsUpdate = true;
+          // Configura o encoding das texturas
+          if (material.map) {
+            material.map.encoding = THREE.sRGBEncoding;
+            material.map.needsUpdate = true;
           }
-          if (child.material.emissiveMap) {
-            child.material.emissiveMap.encoding = THREE.sRGBEncoding;
-            child.material.emissiveMap.needsUpdate = true;
+          if (material.emissiveMap) {
+            material.emissiveMap.encoding = THREE.sRGBEncoding;
+            material.emissiveMap.needsUpdate = true;
           }
-          if (child.material.normalMap) {
-            child.material.normalMap.needsUpdate = true;
+          if (material.normalMap) {
+            material.normalMap.needsUpdate = true;
           }
-          if (child.material.roughnessMap) {
-            child.material.roughnessMap.needsUpdate = true;
+          if (material.roughnessMap) {
+            material.roughnessMap.needsUpdate = true;
           }
-          if (child.material.metalnessMap) {
-            child.material.metalnessMap.needsUpdate = true;
+          if (material.metalnessMap) {
+            material.metalnessMap.needsUpdate = true;
           }
-          
-          // Ajusta as propriedades do material
+
+          // Aplica o material
+          child.material = material;
           child.material.needsUpdate = true;
         }
       }

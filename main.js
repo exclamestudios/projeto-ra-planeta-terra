@@ -7,9 +7,12 @@ const arView = document.getElementById('arView');
 const descricao = document.getElementById('descricao');
 const loading = document.getElementById('loading');
 
+console.log('Script carregado');
+
 // Função para verificar se o arquivo existe
 async function checkFileExists(url) {
   try {
+    console.log('Verificando arquivo:', url);
     const response = await fetch(url, { method: 'HEAD' });
     if (!response.ok) {
       throw new Error(`Arquivo não encontrado: ${url} (${response.status})`);
@@ -23,17 +26,20 @@ async function checkFileExists(url) {
 }
 
 // Inicializa o MindAR
+console.log('Inicializando MindAR');
 const mindarThree = new MindARThree({
   container: arView,
   imageTargetSrc: './mind/terra.mind',
   maxTrack: 1
   // sem uiLoading/uiScanning/uiError → aparecerá o retículo + linha automaticamente
 });
+console.log('MindAR inicializado');
 
 // Obtém a cena e a câmera
 const { scene, camera } = mindarThree;
 
 // Configura o renderizador
+console.log('Configurando renderizador');
 const renderer = new THREE.WebGLRenderer({ 
   antialias: true,
   alpha: true 
@@ -41,14 +47,17 @@ const renderer = new THREE.WebGLRenderer({
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(window.devicePixelRatio);
 arView.appendChild(renderer.domElement);
+console.log('Renderizador configurado');
 
 // Carrega a textura da Terra
+console.log('Iniciando carregamento da textura');
 const textureLoader = new THREE.TextureLoader();
 textureLoader.crossOrigin = 'anonymous';
 
 textureLoader.load(
   './img/terra.jpg',
   (texture) => {
+    console.log('Textura carregada com sucesso');
     // Cria a geometria da Terra
     const geometry = new THREE.SphereGeometry(0.5, 32, 32);
     const material = new THREE.MeshBasicMaterial({ 
@@ -60,6 +69,7 @@ textureLoader.load(
     
     // Adiciona a Terra à cena
     scene.add(earth);
+    console.log('Terra adicionada à cena');
   },
   undefined,
   (error) => {
@@ -70,39 +80,43 @@ textureLoader.load(
 
 // Função para iniciar a AR
 async function startAR() {
-  console.log('Iniciando AR');
-
   try {
+    console.log('Iniciando AR');
+    
     // Verifica se o arquivo .mind existe
+    console.log('Verificando arquivo .mind');
     const mindFileExists = await checkFileExists('./mind/terra.mind');
     if (!mindFileExists) {
       throw new Error('Arquivo .mind não encontrado');
     }
 
     // Esconde o botão e mostra a view AR
+    console.log('Atualizando UI');
     startButton.style.display = 'none';
     arView.style.display = 'block';
     loading.style.display = 'block';
     descricao.style.opacity = '0';
 
     // Inicia o MindAR
+    console.log('Iniciando MindAR');
     await mindarThree.start();
     console.log('MindAR iniciado com sucesso');
 
     // Adiciona eventos de detecção do marcador
     mindarThree.onTargetFound = () => {
+      console.log('Marcador encontrado');
       loading.style.display = 'none';
       descricao.style.opacity = '1';
-      console.log('Marcador encontrado');
     };
 
     mindarThree.onTargetLost = () => {
+      console.log('Marcador perdido');
       loading.style.display = 'block';
       descricao.style.opacity = '0';
-      console.log('Marcador perdido');
     };
 
     // Inicia o loop de renderização
+    console.log('Iniciando loop de renderização');
     renderer.setAnimationLoop(() => {
       renderer.render(scene, camera);
     });
@@ -115,6 +129,7 @@ async function startAR() {
 }
 
 // Evento de clique no botão
+console.log('Adicionando evento de clique');
 startButton.addEventListener('click', startAR);
 
 // Ajusta o tamanho da janela

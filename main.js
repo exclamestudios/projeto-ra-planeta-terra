@@ -119,6 +119,19 @@ async function startAR() {
       descricao.style.opacity = '0';
     };
 
+    // Adiciona eventos de tracking
+    mindarThree.onTargetUpdate = (target) => {
+      const confidence = target.detectionConfidence;
+      console.log(`Confiança de detecção: ${(confidence * 100).toFixed(1)}%`);
+      
+      // Atualiza a mensagem de loading com a confiança
+      if (confidence < 0.5) {
+        loading.textContent = `🔍 Procurando marcador... (${(confidence * 100).toFixed(1)}%)`;
+      } else {
+        loading.textContent = `✅ Marcador detectado! (${(confidence * 100).toFixed(1)}%)`;
+      }
+    };
+
     // Inicia o loop de renderização
     console.log('Iniciando loop de renderização');
     renderer.setAnimationLoop(() => {

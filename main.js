@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import { MindARThree } from 'mindar-image-three';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { gsap } from 'gsap';
 
 // Elementos da UI
@@ -62,10 +61,6 @@ camera.add(audioListener);
 const ambientLight = new THREE.AmbientLight(0xffffff, 1);
 scene.add(ambientLight);
 
-const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-directionalLight.position.set(1, 1, 1);
-scene.add(directionalLight);
-
 // Configura o renderizador
 console.log('Configurando renderizador');
 const renderer = new THREE.WebGLRenderer({ 
@@ -76,115 +71,39 @@ const renderer = new THREE.WebGLRenderer({
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Limita o pixel ratio
 renderer.outputEncoding = THREE.sRGBEncoding; // Configura o encoding do renderer
-renderer.shadowMap.enabled = true; // Habilita sombras
 arView.appendChild(renderer.domElement);
 console.log('Renderizador configurado');
 
-// Cria o plano que marca a área do marcador
+// Cria o anchor e o plano com a textura
 const anchor = mindarThree.addAnchor(0);
-const geometry = new THREE.PlaneGeometry(1, 0.55);
-const material = new THREE.MeshBasicMaterial({ 
-  color: 0x00ffff, 
-  transparent: true, 
-  opacity: 0.5,
-  side: THREE.DoubleSide
-});
-const plane = new THREE.Mesh(geometry, material);
-anchor.group.add(plane);
+let terraPlane = null;
 
-// Cria o texto flutuante
-const textGeometry = new THREE.TextGeometry('O único planeta conhecido com vida', {
-  font: new THREE.Font(), // Será carregado depois
-  size: 0.1,
-  height: 0.02,
-});
-const textMaterial = new THREE.MeshStandardMaterial({ 
-  color: 0xffffff,
-  emissive: 0xffffff,
-  emissiveIntensity: 0.5
-});
-const textMesh = new THREE.Mesh(textGeometry, textMaterial);
-textMesh.position.set(0, 0.5, 0); // Posiciona acima do modelo
-textMesh.visible = false;
-anchor.group.add(textMesh);
-
-// Carrega o modelo 3D
-console.log('Iniciando carregamento do modelo 3D');
-const gltfLoader = new GLTFLoader();
-let model = null;
-
-gltfLoader.load(
-  './3d/terra/scene.gltf',
-  (gltf) => {
-    console.log('Modelo 3D carregado com sucesso');
-    model = gltf.scene;
+// Carrega a textura da carta
+console.log('Carregando textura da carta');
+const textureLoader = new THREE.TextureLoader();
+textureLoader.load(
+  './img/carta-terra.png',
+  (texture) => {
+    console.log('Textura carregada com sucesso');
     
-    // Ajusta o tamanho do modelo
-    const box = new THREE.Box3().setFromObject(model);
-    const size = box.getSize(new THREE.Vector3());
-    const maxDim = Math.max(size.x, size.y, size.z);
-    const scale = 0.5 / maxDim; // Ajusta para ter 0.5 unidades de tamanho
-    model.scale.set(scale, scale, scale);
+    // Ajusta o encoding da textura
+    texture.encoding = THREE.sRGBEncoding;
+    texture.needsUpdate = true;
     
-    // Centraliza o modelo
-    const center = box.getCenter(new THREE.Vector3());
-    model.position.sub(center.multiplyScalar(scale));
-
-    // Ajusta as texturas e materiais
-    model.traverse((child) => {
-      if (child.isMesh) {
-        // Habilita sombras
-        child.castShadow = true;
-        child.receiveShadow = true;
-
-        // Ajusta as texturas
-        if (child.material) {
-          // Configura o material
-          const material = new THREE.MeshStandardMaterial({
-            map: child.material.map,
-            normalMap: child.material.normalMap,
-            roughnessMap: child.material.roughnessMap,
-            metalnessMap: child.material.metalnessMap,
-            emissiveMap: child.material.emissiveMap,
-            emissive: new THREE.Color(0xffffff),
-            emissiveIntensity: 0.2,
-            roughness: 0.7,
-            metalness: 0.3,
-            side: THREE.DoubleSide
-          });
-
-          // Configura o encoding das texturas
-          if (material.map) {
-            material.map.encoding = THREE.sRGBEncoding;
-            material.map.needsUpdate = true;
-          }
-          if (material.emissiveMap) {
-            material.emissiveMap.encoding = THREE.sRGBEncoding;
-            material.emissiveMap.needsUpdate = true;
-          }
-          if (material.normalMap) {
-            material.normalMap.needsUpdate = true;
-          }
-          if (material.roughnessMap) {
-            material.roughnessMap.needsUpdate = true;
-          }
-          if (material.metalnessMap) {
-            material.metalnessMap.needsUpdate = true;
-          }
-
-          // Aplica o material
-          child.material = material;
-          child.material.needsUpdate = true;
-        }
-      }
+    // Cria o plano com a textura
+    const geometry = new THREE.PlaneGeometry(1, 0.55); // Proporção 1:0.55
+    const material = new THREE.MeshBasicMaterial({
+      map: texture,
+      transparent: true,
+      side: THREE.DoubleSide
     });
     
-    // Adiciona o modelo ao anchor
-    anchor.group.add(model);
-    model.visible = false; // Começa invisível
-
-    // Adiciona rotação contínua ao modelo
-    gsap.to(model.rotation, {
+    terraPlane = new THREE.Mesh(geometry, material);
+    terraPlane.visible = false;
+    anchor.group.add(terraPlane);
+    
+    // Adiciona rotação contínua ao plano
+    gsap.to(terraPlane.rotation, {
       y: Math.PI * 2,
       duration: 20,
       repeat: -1,
@@ -194,13 +113,13 @@ gltfLoader.load(
   // Progresso do carregamento
   (xhr) => {
     const percent = (xhr.loaded / xhr.total) * 100;
-    console.log(`Carregando modelo: ${percent.toFixed(2)}%`);
-    loading.textContent = `Carregando modelo: ${percent.toFixed(0)}%`;
+    console.log(`Carregando textura: ${percent.toFixed(2)}%`);
+    loading.textContent = `Carregando textura: ${percent.toFixed(0)}%`;
   },
   // Erro no carregamento
   (error) => {
-    loading.textContent = '❌ Erro ao carregar modelo 3D';
-    console.error('Erro ao carregar modelo 3D:', error);
+    loading.textContent = '❌ Erro ao carregar textura';
+    console.error('Erro ao carregar textura:', error);
   }
 );
 
@@ -235,23 +154,15 @@ async function startAR() {
         ease: "power2.out"
       });
 
-      // Mostra o modelo e o texto
-      if (model) {
-        model.visible = true;
-        gsap.from(model.scale, {
+      // Mostra o plano com a textura
+      if (terraPlane) {
+        terraPlane.visible = true;
+        gsap.from(terraPlane.scale, {
           x: 0,
           y: 0,
           z: 0,
           duration: 1,
           ease: "elastic.out(1, 0.3)"
-        });
-      }
-      if (textMesh) {
-        textMesh.visible = true;
-        gsap.from(textMesh.position, {
-          y: 1,
-          duration: 1,
-          ease: "bounce.out"
         });
       }
     };
@@ -267,12 +178,9 @@ async function startAR() {
         ease: "power2.in"
       });
 
-      // Esconde o modelo e o texto
-      if (model) {
-        model.visible = false;
-      }
-      if (textMesh) {
-        textMesh.visible = false;
+      // Esconde o plano com a textura
+      if (terraPlane) {
+        terraPlane.visible = false;
       }
 
       // Pausa o áudio se estiver tocando

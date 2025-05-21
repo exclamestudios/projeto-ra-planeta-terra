@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import { MindARThree } from 'mindar-image-three';
-import * as gsap from 'gsap';
 
 // Elementos da UI
 const startButton = document.getElementById('startButton');

@@ -7,16 +7,11 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Planeta Terra – AR</title>
-  <!-- Import Map para módulos ES -->
-  <script type="importmap">
-  {
-    "imports": {
-      "three": "https://cdn.jsdelivr.net/npm/three@0.137.0/build/three.module.js",
-      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.137.0/examples/jsm/",
-      "mindar-image-three": "https://cdn.jsdelivr.net/npm/mind-ar@1.2.0/dist/mindar-image-three.prod.js"
-    }
-  }
-  </script>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/loaders/GLTFLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-three.prod.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
   <style>
     body, html { 
       margin: 0; 
@@ -81,10 +76,19 @@
   </style>
 </head>
 <body>
-  <button id="startButton">Iniciar Realidade Aumentada</button>
   <div id="arView"></div>
-  <div id="descricao">A Terra gira em torno do Sol a 107.000 km/h!</div>
-  <div id="loading">🔍 Procurando marcador...</div>
-  <script type="module" src="./main.js"></script>
+  <div id="loading">Carregando...</div>
+  <div id="descricao">
+    <h1>Planeta Terra</h1>
+    <p>O único planeta conhecido com vida</p>
+  </div>
+  <div id="audioControls">
+    <button id="playButton" class="audio-button">
+      <span class="play-icon">▶️</span>
+      <span class="pause-icon" style="display: none;">⏸️</span>
+    </button>
+  </div>
+  <button id="startButton">Iniciar AR</button>
+  <script type="module" src="main.js"></script>
 </body>
 </html>

@@ -1,12 +1,21 @@
 import * as THREE from 'three';
 import { MindARThree } from 'mindar-image-three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { gsap } from 'gsap';
 
 // Elementos da UI
 const startButton = document.getElementById('startButton');
 const arView = document.getElementById('arView');
 const descricao = document.getElementById('descricao');
 const loading = document.getElementById('loading');
+const playButton = document.getElementById('playButton');
+const playIcon = playButton.querySelector('.play-icon');
+const pauseIcon = playButton.querySelector('.pause-icon');
+
+// Configuração do áudio
+const audioListener = new THREE.AudioListener();
+let audio = null;
+let isPlaying = false;
 
 console.log('Script carregado');
 
@@ -47,6 +56,7 @@ console.log('MindAR inicializado');
 
 // Obtém a cena e a câmera
 const { scene, camera } = mindarThree;
+camera.add(audioListener);
 
 // Adiciona iluminação à cena
 const ambientLight = new THREE.AmbientLight(0xffffff, 1);
@@ -81,6 +91,22 @@ const material = new THREE.MeshBasicMaterial({
 });
 const plane = new THREE.Mesh(geometry, material);
 anchor.group.add(plane);
+
+// Cria o texto flutuante
+const textGeometry = new THREE.TextGeometry('O único planeta conhecido com vida', {
+  font: new THREE.Font(), // Será carregado depois
+  size: 0.1,
+  height: 0.02,
+});
+const textMaterial = new THREE.MeshStandardMaterial({ 
+  color: 0xffffff,
+  emissive: 0xffffff,
+  emissiveIntensity: 0.5
+});
+const textMesh = new THREE.Mesh(textGeometry, textMaterial);
+textMesh.position.set(0, 0.5, 0); // Posiciona acima do modelo
+textMesh.visible = false;
+anchor.group.add(textMesh);
 
 // Carrega o modelo 3D
 console.log('Iniciando carregamento do modelo 3D');
@@ -156,6 +182,14 @@ gltfLoader.load(
     // Adiciona o modelo ao anchor
     anchor.group.add(model);
     model.visible = false; // Começa invisível
+
+    // Adiciona rotação contínua ao modelo
+    gsap.to(model.rotation, {
+      y: Math.PI * 2,
+      duration: 20,
+      repeat: -1,
+      ease: "none"
+    });
   },
   // Progresso do carregamento
   (xhr) => {
@@ -193,18 +227,60 @@ async function startAR() {
     anchor.onTargetFound = () => {
       console.log('Marcador encontrado');
       loading.style.display = 'none';
-      descricao.style.opacity = '1';
+      
+      // Anima a descrição
+      gsap.to(descricao, {
+        opacity: 1,
+        duration: 0.5,
+        ease: "power2.out"
+      });
+
+      // Mostra o modelo e o texto
       if (model) {
         model.visible = true;
+        gsap.from(model.scale, {
+          x: 0,
+          y: 0,
+          z: 0,
+          duration: 1,
+          ease: "elastic.out(1, 0.3)"
+        });
+      }
+      if (textMesh) {
+        textMesh.visible = true;
+        gsap.from(textMesh.position, {
+          y: 1,
+          duration: 1,
+          ease: "bounce.out"
+        });
       }
     };
 
     anchor.onTargetLost = () => {
       console.log('Marcador perdido');
       loading.style.display = 'block';
-      descricao.style.opacity = '0';
+      
+      // Anima a descrição
+      gsap.to(descricao, {
+        opacity: 0,
+        duration: 0.3,
+        ease: "power2.in"
+      });
+
+      // Esconde o modelo e o texto
       if (model) {
         model.visible = false;
+      }
+      if (textMesh) {
+        textMesh.visible = false;
+      }
+
+      // Pausa o áudio se estiver tocando
+      if (audio && isPlaying) {
+        audio.pause();
+        isPlaying = false;
+        playIcon.style.display = 'block';
+        pauseIcon.style.display = 'none';
       }
     };
 
@@ -237,6 +313,36 @@ async function startAR() {
     loading.textContent = `❌ Erro: ${error.message || 'Desconhecido'}`;
     startButton.style.display = 'block';
   }
+}
+
+// Evento de clique no botão de play/pause
+playButton.addEventListener('click', () => {
+  if (!audio) {
+    // Carrega o áudio na primeira vez
+    audio = new THREE.Audio(audioListener);
+    const audioLoader = new THREE.AudioLoader();
+    audioLoader.load('./audio/narracao.mp3', (buffer) => {
+      audio.setBuffer(buffer);
+      audio.setLoop(true);
+      audio.setVolume(0.5);
+      toggleAudio();
+    });
+  } else {
+    toggleAudio();
+  }
+});
+
+function toggleAudio() {
+  if (isPlaying) {
+    audio.pause();
+    playIcon.style.display = 'block';
+    pauseIcon.style.display = 'none';
+  } else {
+    audio.play();
+    playIcon.style.display = 'none';
+    pauseIcon.style.display = 'block';
+  }
+  isPlaying = !isPlaying;
 }
 
 // Evento de clique no botão
